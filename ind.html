@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Swastha - Health Companion</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --primary: #2a9d8f;
+      --secondary: #264653;
+      --accent: #e9c46a;
+      --light: #f8f9fa;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding-bottom: 80px;
+    }
+
+    .hero-section {
+      background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+      color: white;
+      padding: 4rem 0;
+    }
+
+    .feature-card {
+      border-radius: 15px;
+      transition: transform 0.3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .doctor-card {
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .doctor-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .chat-widget {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 350px;
+      max-height: 500px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: var(--primary);
+      color: white;
+      padding: 15px;
+      font-weight: bold;
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .chat-message {
+      margin-bottom: 10px;
+      max-width: 80%;
+    }
+
+    .user-message {
+      background: var(--primary);
+      color: white;
+      border-radius: 15px 15px 0 15px;
+      padding: 10px 15px;
+      margin-left: auto;
+    }
+
+    .bot-message {
+      background: var(--light);
+      border-radius: 15px 15px 15px 0;
+      padding: 10px 15px;
+      margin-right: auto;
+    }
+
+    .chat-input {
+      border-top: 1px solid #eee;
+      padding: 10px;
+      display: flex;
+    }
+
+    .chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      cursor: pointer;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="#">Swastha</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link active" href="#features">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="#doctors">Doctors</a></li>
+        <li class="nav-item"><a class="nav-link" href="#diet-advisor">Diet Advisor</a></li>
+        <li class="nav-item"><a class="nav-link" href="#pharmacy-finder">Pharmacy Finder</a></li>
+        <li class="nav-item"><a class="nav-link" href= "http://127.0.0.1:5000">Chat Assistant</a></li>
+      </ul>
+    </div>
+<div class="row" id="extraDoctorsRow"></div>
+
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section text-center" id="features">
+  <div class="container">
+    <h1 class="display-4 fw-bold mb-4">Your Complete Health Companion</h1>
+    <p class="lead mb-5">Scan medicines, consult doctors, get dietary advice, and more - all in one place</p>
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <i class="bi bi-camera fs-1 text-primary"></i>
+            <h5 class="card-title">Medicine Scanner</h5>
+            <button class="btn btn-outline-primary mt-3" onclick="openCamera()">Open Camera</button>
+            <video id="cameraStream" width="100%" autoplay class="d-none mt-3"></video>
+            <button class="btn btn-outline-danger mt-3 d-none" id="closeCamera" onclick="closeCamera()">Close Camera</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <i class="bi bi-egg-fried fs-1 text-primary"></i>
+            <h5 class="card-title">Diet Advisor</h5>
+            <div class="input-group mb-3">
+              <input type="text" id="diet-input" class="form-control" placeholder="Enter ur goal(e.g. weight loss)">
+              <button class="btn btn-primary" onclick="getDietAdvice()">Get Advice</button>
+            </div>
+            <div id="diet-result" class="alert alert-info d-none"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card feature-card h-100">
+          <div class="card-body" onclick="window.location.href='#doctors'" style="cursor:pointer;">
+            <i class="bi bi-camera-video fs-1 text-primary"></i>
+            <h5 class="card-title">Talk to a Doctor</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card feature-card h-100">
+          <div class="card-body" onclick="window.location.href=' http://127.0.0.1:5000'" style="cursor:pointer;">
+            <i class="bi bi-robot fs-1 text-primary"></i>
+            <h5 class="card-title">Health Assistant</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Doctor Appointment Section -->
+<section id="doctors" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5">Book an Appointment</h2>
+
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <select class="form-select">
+          <option selected>Select Specialty</option>
+          <option>General Physician</option>
+          <option>Cardiologist</option>
+        </select>
+      </div>
+     <div class="row mb-4">
+  <div class="col-md-4">
+    <input type="text" class="form-control" id="specialtyInput" placeholder="Specialty (e.g. Neurologist)">
+  </div>
+  <div class="col-md-4">
+    <input type="text" class="form-control" id="doctorNameInput" placeholder="Search by doctor name">
+  </div>
+  <div class="col-md-4">
+    <input type="text" class="form-control" id="locationInput" placeholder="Location">
+  </div>
+</div>
+<div class="text-end mb-4">
+  <button class="btn btn-success" onclick="filterDoctors()">Search Doctors</button>
+</div>
+
+
+    <div class="row">
+      <!-- Doctor 1 -->
+      <div class="col-md-3 mb-4">
+        <div class="card doctor-card h-100">
+          <div class="card-body">
+            <div class="d-flex mb-3">
+              <img src="https://via.placeholder.com/80" class="rounded-circle me-3" alt="Doctor">
+              <div>
+                <h5 class="mb-0">Dr. Rajesh Kumar</h5>
+                <p class="text-muted mb-0">General Physician</p>
+              </div>
+            </div>
+            <p><i class="bi bi-geo-alt"></i> 1.5km away | <i class="bi bi-clock"></i> Available today</p>
+            <p><strong>₹500</strong> consultation fee</p>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary">Book Appointment</button>
+              <button class="btn btn-outline-primary">View Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor 2 -->
+      <div class="col-md-3 mb-4">
+        <div class="card doctor-card h-100">
+          <div class="card-body">
+            <div class="d-flex mb-3">
+              <img src="https://via.placeholder.com/80" class="rounded-circle me-3" alt="Doctor">
+              <div>
+                <h5 class="mb-0">Dr. Meera Patel</h5>
+                <p class="text-muted mb-0">Cardiologist</p>
+              </div>
+            </div>
+            <p><i class="bi bi-geo-alt"></i> 2km away | <i class="bi bi-clock"></i> Available tomorrow</p>
+            <p><strong>₹700</strong> consultation fee</p>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary">Book Appointment</button>
+              <button class="btn btn-outline-primary">View Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor 3 -->
+      <div class="col-md-3 mb-4">
+        <div class="card doctor-card h-100">
+          <div class="card-body">
+            <div class="d-flex mb-3">
+              <img src="https://via.placeholder.com/80" class="rounded-circle me-3" alt="Doctor">
+              <div>
+                <h5 class="mb-0">Dr. Arjun Rao</h5>
+                <p class="text-muted mb-0">General Physician</p>
+              </div>
+            </div>
+            <p><i class="bi bi-geo-alt"></i> 3km away | <i class="bi bi-clock"></i> Available today</p>
+            <p><strong>₹400</strong> consultation fee</p>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary">Book Appointment</button>
+              <button class="btn btn-outline-primary">View Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor 4 -->
+      <div class="col-md-3 mb-4">
+        <div class="card doctor-card h-100">
+          <div class="card-body">
+            <div class="d-flex mb-3">
+              <img src="https://via.placeholder.com/80" class="rounded-circle me-3" alt="Doctor">
+              <div>
+                <h5 class="mb-0">Dr. Sneha Sharma</h5>
+                <p class="text-muted mb-0">Cardiologist</p>
+              </div>
+            </div>
+            <p><i class="bi bi-geo-alt"></i> 0.8km away | <i class="bi bi-clock"></i> Available today</p>
+            <p><strong>₹650</strong> consultation fee</p>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary">Book Appointment</button>
+              <button class="btn btn-outline-primary">View Profile</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- Pharmacy Finder Section -->
+<section id="pharmacy-finder" class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-4">Nearby Pharmacies</h2>
+    <div class="text-center">
+      <button class="btn btn-primary" onclick="window.location.href='map.html'" style="cursor:pointer;">Find Pharmacies</button>
+      <ul id="pharmacy-list" class="list-group mt-4"></ul>
+    </div>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+  </div>
+</section>
+
+<!-- Chat Widget Button -->
+<div class="chat-toggle">
+  <i class="bi bi-robot fs-4"></i>
+</div>
+
+<!-- Chat Widget -->
+<div class="chat-widget d-none">
+  <div class="chat-header d-flex justify-content-between align-items-center">
+    <span>Swastha Assistant</span>
+    <button class="btn btn-sm btn-light"><i class="bi bi-x"></i></button>
+  </div>
+  <div class="chat-body">
+    <div class="chat-message bot-message">
+      Hello! I'm your Swastha health assistant. How can I help you today?
+    </div>
+  </div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" class="form-control me-2" placeholder="Type your message...">
+    <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<!-- ... (Your existing HTML and JavaScript above this stays the same) -->
+
+<script>
+  // Camera Functions
+  function openCamera() {
+    const cameraStream = document.getElementById('cameraStream');
+    const closeCameraBtn = document.getElementById('closeCamera');
+    if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          cameraStream.srcObject = stream;
+          cameraStream.classList.remove('d-none');
+          closeCameraBtn.classList.remove('d-none');
+        });
+    }
+  }
+
+  function closeCamera() {
+    const cameraStream = document.getElementById('cameraStream');
+    const closeCameraBtn = document.getElementById('closeCamera');
+    let stream = cameraStream.srcObject;
+    let tracks = stream.getTracks();
+    tracks.forEach(track => track.stop());
+    cameraStream.srcObject = null;
+    cameraStream.classList.add('d-none');
+    closeCameraBtn.classList.add('d-none');
+  }
+
+  // Diet Advisor Function
+  function getDietAdvice() {
+    const goal = document.getElementById('diet-input').value;
+    const result = document.getElementById('diet-result');
+    result.classList.remove('d-none');
+    result.innerText = `Here are some tips for your goal: ${goal}.`;
+  }
+
+  // Pharmacy Finder & Map
+  function findPharmacies() {
+    const pharmacyList = document.getElementById('pharmacy-list');
+    pharmacyList.innerHTML = '';
+    const pharmacies = [
+      { name: 'Pharmacy A', distance: '1 km' },
+      { name: 'Pharmacy B', distance: '2.5 km' },
+      { name: 'Pharmacy C', distance: '3 km' },
+    ];
+
+    pharmacies.forEach(pharmacy => {
+      const listItem = document.createElement('li');
+      listItem.className = 'list-group-item';
+      listItem.innerText = `${pharmacy.name} - ${pharmacy.distance}`;
+      pharmacyList.appendChild(listItem);
+    });
+
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 12,
+      center: { lat: 12.9716, lng: 77.5946 },
+    });
+
+    pharmacies.forEach(pharmacy => {
+      new google.maps.Marker({
+        position: { lat: 12.9716, lng: 77.5946 },
+        map: map,
+        title: pharmacy.name
+      });
+    });
+  }
+
+  // Chatbot Functions
+  function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value;
+    addChatMessage(message, 'user');
+    input.value = '';
+    botResponse(message);
+  }
+
+  function botResponse(message) {
+    let botReply = "Sorry, I didn't understand that.";
+    if (message.toLowerCase().includes('diet')) {
+      botReply = 'I can help you with diet advice!';
+    } else if (message.toLowerCase().includes('appointment')) {
+      botReply = 'You can book an appointment in the doctors section.';
+    } else if (message.toLowerCase().includes('pharmacy')) {
+      botReply = 'Use the pharmacy finder to see nearby stores.';
+    }
+    setTimeout(() => addChatMessage(botReply, 'bot'), 800);
+  }
+
+  function addChatMessage(text, sender) {
+    const msg = document.createElement('div');
+    msg.className = `chat-message ${sender === 'user' ? 'user-message' : 'bot-message'}`;
+    msg.innerText = text;
+    document.querySelector('.chat-body').appendChild(msg);
+    document.querySelector('.chat-body').scrollTop = document.querySelector('.chat-body').scrollHeight;
+  }
+
+  // Sample doctor data
+  const extraDoctors = [
+      {
+        name: "Dr. Anita Desai",
+        specialty: "Dermatologist",
+        location: "Mumbai",
+        fee: 600,
+        availability: "Available today",
+        distance: "1.2km"
+      },
+      {
+        name: "Dr. Vikram Joshi",
+        specialty: "Neurologist",
+        location: "Delhi",
+        fee: 900,
+        availability: "Available tomorrow",
+        distance: "2.1km"
+      },
+      {
+        name: "Dr. Priya Nair",
+        specialty: "General Physician",
+        location: "Chennai",
+        fee: 400,
+        availability: "Available today",
+        distance: "3km"
+      }
+    ];
+
+  // Filter & display matching doctors
+  function filterDoctors() {
+      const specialty = document.getElementById('specialtyInput').value.toLowerCase();
+      const doctorName = document.getElementById('doctorNameInput').value.toLowerCase();
+      const location = document.getElementById('locationInput').value.toLowerCase();
+
+      const filtered = extraDoctors.filter(doc =>
+        doc.specialty.toLowerCase().includes(specialty) &&
+        doc.name.toLowerCase().includes(doctorName) &&
+        doc.location.toLowerCase().includes(location)
+      );
+
+      const row = document.getElementById('extraDoctorsRow');
+      row.innerHTML = '';
+
+      filtered.forEach(doc => {
+        const card = document.createElement('div');
+        card.className = 'col-md-3 mb-4';
+        card.innerHTML = `
+          <div class="card doctor-card h-100">
+            <div class="card-body">
+              <div class="d-flex mb-3">
+                <img src="https://via.placeholder.com/80" class="rounded-circle me-3" alt="Doctor">
+                <div>
+                  <h5 class="mb-0">${doc.name}</h5>
+                  <p class="text-muted mb-0">${doc.specialty}</p>
+                </div>
+              </div>
+              <p><i class="bi bi-geo-alt"></i> ${doc.distance} | <i class="bi bi-clock"></i> ${doc.availability}</p>
+              <p><strong>₹${doc.fee}</strong> consultation fee</p>
+              <div class="d-grid gap-2">
+                <button class="btn btn-primary">Book Appointment</button>
+                <button class="btn btn-outline-primary">View Profile</button>
+              </div>
+            </div>
+          </div>
+        `;
+        row.appendChild(card);
+      });
+    }
+</script>
+
+<!-- Load Google Maps -->
+<script async defer
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+</script>
+</body>
+</html>
+
+
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
